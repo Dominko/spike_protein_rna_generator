@@ -5,11 +5,11 @@ from torch.nn import functional as F
 from tqdm import tqdm
 
 from ..configs import ModelConfigs
-from ..constants import CODON_INDICES, EXTRA_ATTRIBUTE_SCORES
+from ..constants import CAI_TEMPLATE, CODON_INDICES
 from ..utils.model_utils import generate_square_subsequent_mask
 
 
-class Vaxformer(nn.Module):
+class RNAformer(nn.Module):
     def __init__(self, model_configs: ModelConfigs, device=None, **kwargs):
         super().__init__()
         self.max_seq_len = model_configs.hyperparameters.max_seq_len
@@ -21,9 +21,9 @@ class Vaxformer(nn.Module):
 
         # include start token in the vocab size
         self.vocab_size = len(CODON_INDICES) + 1
-        self.immunogenicity_size = len(EXTRA_ATTRIBUTE_SCORES)
+        self.CAI_size = len(CAI_TEMPLATE)
 
-        self.padding_idx = kwargs["padding_idx"]
+        # self.padding_idx = kwargs["padding_idx"]
         self.start_idx = kwargs["start_idx"]
 
         self.device = device
@@ -33,13 +33,14 @@ class Vaxformer(nn.Module):
     def _build_model(self):
         self.amino_acid_embedding = nn.Embedding(self.vocab_size, self.hidden_dim)
 
-        transformer_input_dim = self.hidden_dim + self.immunogenicity_size * self.nhead
-        self.immunogenicity_embedding = nn.Embedding(
-            self.immunogenicity_size, transformer_input_dim
-        )
-        self.immunogenicity_value_embedding = nn.Embedding(
-            self.immunogenicity_size, self.immunogenicity_size * self.nhead
-        )
+        transformer_input_dim = self.hidden_dim + self.CAI_size * self.nhead
+        # transformer_input_dim = self.hidden_dim + self.immunogenicity_size * self.nhead
+        # self.immunogenicity_embedding = nn.Embedding(
+        #     self.immunogenicity_size, transformer_input_dim
+        # )
+        # self.immunogenicity_value_embedding = nn.Embedding(
+        #     self.immunogenicity_size, self.immunogenicity_size * self.nhead
+        # )
 
         self.positional_embedding = PositionalEncoder(
             self.hidden_dim, self.dropout, self.max_seq_len, self.device
@@ -55,46 +56,54 @@ class Vaxformer(nn.Module):
 
         self.projection = nn.Linear(transformer_input_dim, self.hidden_dim)
 
-    def forward(self, input_sequence, input_immunogenicity, mask=None):
+    def forward(self, input_sequence, codon_adaptation_index=CAI_TEMPLATE, mask=None):
         amino_acid_embedded = self.amino_acid_embedding(input_sequence)
         amino_acid_positioned = self.positional_embedding(amino_acid_embedded)
 
-        immunogenicity_embedded = self.immunogenicity_embedding(
-            input_immunogenicity
-        ).unsqueeze(1)
-
-        immunogenicity_value_embedded = self.immunogenicity_value_embedding(
-            input_immunogenicity
-        ).unsqueeze(1)
+        # immunogenicity_value_embedded = self.immunogenicity_value_embedding(
+        #     input_immunogenicity
+        # ).unsqueeze(1)
         # batch_size * len * 3
-        immunogenicity_value_embedded = immunogenicity_value_embedded.repeat(
-            1, amino_acid_positioned.size(1), 1
-        )
+        codon_adaptation_index = codon_adaptation_index.unsqueeze(1)
+        # print(self.hidden_dim + self.CAI_size * self.nhead)
+        # print(codon_adaptation_index.size(2))
+
+        codon_adaptation_index_nhead = codon_adaptation_index.repeat(
+            1, amino_acid_positioned.size(1), self.nhead
+        ) 
+        codon_adaptation_index_memory = codon_adaptation_index.repeat(
+            1, amino_acid_positioned.size(1), int((self.hidden_dim + self.CAI_size * self.nhead) / codon_adaptation_index.size(2))
+        ) 
         amino_acid_positioned = torch.cat(
-            (amino_acid_positioned, immunogenicity_value_embedded), dim=2
+            (amino_acid_positioned , codon_adaptation_index_nhead ), dim=2
         )
+
+        # print(amino_acid_positioned.shape)
+        # print(codon_adaptation_index_nhead.shape)
+        # print(codon_adaptation_index_memory.shape)
+        # print(mask.shape)
 
         amino_acid_decoded = self.transformer(
-            amino_acid_positioned, memory=immunogenicity_embedded, tgt_mask=mask
+            amino_acid_positioned, memory=codon_adaptation_index_memory, tgt_mask=mask
         )
         amino_acid_decoded = self.projection(amino_acid_decoded)
         out = amino_acid_decoded @ self.amino_acid_embedding.weight.T
 
         return out
 
-    def step(self, input_sequence, input_immunogenicity_score):
+    def step(self, input_sequence, input_codon_adaptation_index=CAI_TEMPLATE):
         input = input_sequence[:, :-1]
         target = input_sequence[:, 1:].contiguous().view(-1)
         mask = generate_square_subsequent_mask(input.size(1)).to(self.device)
 
-        generated_sequences = self.forward(input, input_immunogenicity_score, mask)
+        generated_sequences = self.forward(input, input_codon_adaptation_index, mask)
         generated_sequences = generated_sequences.view(-1, self.vocab_size)
 
         loss = F.cross_entropy(generated_sequences, target)
         return {"loss": loss, "perplexity": torch.exp(loss)}
 
     def generate_sequences(
-        self, num_sequences, immunogenicity_score, temperature=1.0, batch_size=None
+        self, num_sequences, codon_adaptation_index, temperature=1.0, batch_size=None
     ):
         self.eval()
         # padding is all ones
@@ -112,12 +121,12 @@ class Vaxformer(nn.Module):
             )
             input_sequences = input_sequences.to(self.device)
 
-            immunogenicity_scores = torch.LongTensor(
-                [immunogenicity_score] * batch_size
+            codon_adaptation_indices = torch.LongTensor(
+                [codon_adaptation_index] * batch_size
             ).to(self.device)
 
             for i in tqdm(range(self.max_seq_len)):
-                out = self.forward(input_sequences, immunogenicity_scores)
+                out = self.forward(input_sequences, codon_adaptation_indices)
                 out = out[:, -1, :] / temperature
                 out = F.softmax(out, dim=-1)
 

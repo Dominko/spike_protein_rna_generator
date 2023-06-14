@@ -5,13 +5,14 @@ from pydantic import BaseModel
 
 class DataSplitConfigs(BaseModel):
     sequences_path: str
-    immunogenicity_scores_path: Optional[str]
+    codon_adaptation_indices_path: Optional[str]
 
 
 class DatasetConfigs(BaseModel):
     train: DataSplitConfigs
     val: DataSplitConfigs
     test: DataSplitConfigs
+    load_codon_adaptation_indices: bool = False
 
 
 class HyperparametersConfigs(BaseModel):
@@ -37,6 +38,7 @@ class ModelConfigs(BaseModel):
     model_type: str
     model_state_dict_path: Optional[str]
     hyperparameters: Optional[HyperparametersConfigs]
+    extra_attribute: bool = False
 
 
 class SetupConfigs(BaseModel):

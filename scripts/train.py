@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 load_dotenv("env/.env")
 
 import wandb
-
 from src.configs import TrainingConfigs
 from src.dataset.dataset import SequenceDataset
 from src.trainer import Trainer
@@ -20,7 +19,7 @@ from src.utils import common_utils
 
 def argument_parser():
     parser = argparse.ArgumentParser(
-        description="Vaxformer project"
+        description="Spike Protein RNA generator"
     )
     parser.add_argument("--config_filepath", type=str, required=True)
     parser.add_argument("--log_to_wandb", action="store_true")
@@ -41,8 +40,8 @@ def main():
     print(f"Running on {device}")
 
     wandb.init(
-        project="spike-protein-design",
-        entity="protein-kge",
+        project="spike-protein-rna-design",
+        entity="dominik-grabarczyk",
         mode="online" if args.log_to_wandb else "disabled",
     )
     wandb.config.update(configs.dict())
@@ -56,11 +55,12 @@ def main():
         prepend_start_token = False
     if configs.model_configs.model_type in [
         "vaxformer",
+        "rnaformer",
         "lstm",
     ]:
         sequence_one_hot = False
         label_one_hot = False
-        prepend_start_token = True
+        prepend_start_token = False
 
     train_dataset = SequenceDataset(
         configs.dataset_configs,

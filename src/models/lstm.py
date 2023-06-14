@@ -6,7 +6,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 
 from ..configs import ModelConfigs
-from ..constants import AMINO_ACID_INDICES, IMMUNOGENICITY_ONE_HOT
+from ..constants import CAI_TEMPLATE, CODON_INDICES
 
 
 class VaxLSTM(nn.Module):
@@ -18,11 +18,11 @@ class VaxLSTM(nn.Module):
         self.hidden_dim = model_configs.hyperparameters.hidden_dim
         self.num_layers = model_configs.hyperparameters.num_layers
 
-        self.vocab_size = len(AMINO_ACID_INDICES) + 1
+        self.vocab_size = len(CODON_INDICES) + 1
         self.padding_idx = kwargs["padding_idx"]
         self.start_idx = kwargs["start_idx"]
 
-        self.conditional = len(IMMUNOGENICITY_ONE_HOT)
+        self.conditional = len(CAI_TEMPLATE)
 
         self.device = device
 

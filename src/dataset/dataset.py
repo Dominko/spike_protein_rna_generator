@@ -2,10 +2,7 @@ import numpy as np
 import torch
 
 from ..configs import DatasetConfigs
-from ..constants import (
-    IMMUNOGENICITY_ONE_HOT,
-    START_TOKEN,
-)
+from ..constants import CAI_TEMPLATE, START_TOKEN
 from .tokenizer import Tokenizer
 
 
@@ -15,24 +12,24 @@ def load_sequences_file(filename):
     return [viral_seq.replace("\n", "") for viral_seq in viral_seqs]
 
 
-def load_immunogenicity_scores(
-    immunogenicity_scores_filepath, sequences, one_hot: bool
+def load_codon_adaptation_indices(
+    codon_adaptation_indices_filepath
 ):
-    if immunogenicity_scores_filepath:
-        immunogenicity_scores = np.load(immunogenicity_scores_filepath)
-        if one_hot:
-            immunogenicity_scores = np.array(
-                [IMMUNOGENICITY_ONE_HOT[score] for score in immunogenicity_scores]
-            )
-    else:
-        if one_hot:
-            immunogenicity_scores = np.array(
-                [IMMUNOGENICITY_ONE_HOT[1] for _ in range(len(sequences))]
-            )
-        else:
-            immunogenicity_scores = np.array([1 for _ in range(len(sequences))])
+    if codon_adaptation_indices_filepath:
+        codon_adaptation_indices = np.load(codon_adaptation_indices_filepath)
+    #     if one_hot:
+    #         immunogenicity_scores = np.array(
+    #             [EXTRA_ATTRIBUTE_ONE_HOT[score] for score in immunogenicity_scores]
+    #         )
+    # else:
+    #     if one_hot:
+    #         immunogenicity_scores = np.array(
+    #             [EXTRA_ATTRIBUTE_ONE_HOT[1] for _ in range(len(sequences))]
+    #         )
+    #     else:
+    #         immunogenicity_scores = np.array([1 for _ in range(len(sequences))])
 
-    return torch.tensor(immunogenicity_scores)
+    return torch.tensor(codon_adaptation_indices).double()
 
 
 class SequenceDataset:
@@ -49,30 +46,35 @@ class SequenceDataset:
         self.sequence_one_hot = sequence_one_hot
         self.label_one_hot = label_one_hot
         self.prepend_start_token = prepend_start_token
+        self.load_codon_adaptation_indices = dataset_configs.load_codon_adaptation_indices
         self.tokenizer = Tokenizer(
             self.max_seq_len, self.sequence_one_hot, prepend_start_token
         )
 
         if split == "train":
             sequences_filepath = dataset_configs.train.sequences_path
-            immunogenicity_scores_filepath = (
-                dataset_configs.train.immunogenicity_scores_path
+            codon_adaptation_indices_filepath = (
+                dataset_configs.train.codon_adaptation_indices_path
             )
         elif split == "val":
             sequences_filepath = dataset_configs.val.sequences_path
-            immunogenicity_scores_filepath = (
-                dataset_configs.val.immunogenicity_scores_path
+            codon_adaptation_indices_filepath = (
+                dataset_configs.val.codon_adaptation_indices_path
             )
         elif split == "test":
             sequences_filepath = dataset_configs.test.sequences_path
-            immunogenicity_scores_filepath = (
-                dataset_configs.test.immunogenicity_scores_path
+            codon_adaptation_indices_filepath = (
+                dataset_configs.test.codon_adaptation_indices_path
             )
 
         self.sequences = load_sequences_file(sequences_filepath)
-        self.immunogenicity_scores = load_immunogenicity_scores(
-            immunogenicity_scores_filepath, self.sequences, self.label_one_hot
-        )
+
+        if self.load_codon_adaptation_indices:
+            self.codon_adaptation_indices = load_codon_adaptation_indices(
+                codon_adaptation_indices_filepath, self.sequences, self.label_one_hot
+            )
+        else:
+            self.codon_adaptation_indices = torch.tensor(np.vstack([CAI_TEMPLATE]*len(self.sequences))).float()
 
     def __len__(self):
         return len(self.sequences)
@@ -85,5 +87,5 @@ class SequenceDataset:
 
         return (
             self.tokenizer.encode(sequence),
-            self.immunogenicity_scores[idx],
+            self.codon_adaptation_indices[idx],
         )

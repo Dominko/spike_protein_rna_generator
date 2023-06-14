@@ -2,19 +2,22 @@ import os
 
 import torch
 import tqdm
-import wandb
 from torch import nn
 from torch.utils.data import DataLoader
+
+import wandb
 
 from .configs import ModelConfigs, TrainingConfigs
 from .constants import START_TOKEN
 from .dataset.dataset import SequenceDataset
 from .models.lstm import VaxLSTM
-from .models.vae import SpikeFCVAE
-from .models.vaxformer import Vaxformer
+from .models.rnaformer import RNAformer
 
-MODELS_MAP = {"spike_vae": SpikeFCVAE, "vaxformer": Vaxformer, "lstm": VaxLSTM}
+# from .models.vae import SpikeFCVAE
+# from .models.vaxformer import Vaxformer
 
+# MODELS_MAP = {"spike_vae": SpikeFCVAE, "vaxformer": Vaxformer, "rnaformer": RNAformer, "lstm": VaxLSTM}
+MODELS_MAP = {"rnaformer": RNAformer, "lstm": VaxLSTM}
 
 class Trainer:
     def __init__(
@@ -43,7 +46,7 @@ class Trainer:
         self.configs = configs
 
         # Dataset setup
-        self.padding_idx = train_dataset.tokenizer.enc_dict["-"]
+        # self.padding_idx = train_dataset.tokenizer.enc_dict["-"]
         if START_TOKEN in train_dataset.tokenizer.enc_dict:
             self.start_idx = train_dataset.tokenizer.enc_dict[START_TOKEN]
         else:
@@ -88,9 +91,9 @@ class Trainer:
         """
 
         kwargs = {}
-        if self.model_type in ["vaxformer", "lstm"]:
+        if self.model_type in ["vaxformer", "rnaformer", "lstm"]:
             kwargs.update(
-                {"padding_idx": self.padding_idx, "start_idx": self.start_idx}
+                {"start_idx": self.start_idx}
             )
 
         if model_configs.model_type not in MODELS_MAP:
@@ -152,7 +155,7 @@ class Trainer:
                 "reconstruction_loss": 0,
                 "kl_divergence": 0,
             }
-        elif self.model_type in ["vaxformer", "lstm"]:
+        elif self.model_type in ["vaxformer", "lstm", 'rnaformer']:
             total_loss = {"combined_loss": 0, "perplexity": 0}
 
         total_examples = 0
@@ -164,17 +167,17 @@ class Trainer:
             disable=self.verbose,
         ):
             # Load data to GPU
-            batch_sequences, batch_immunogenicity_scores = batch
+            batch_sequences, batch_codon_adaptation_indices = batch
             batch_sequences = batch_sequences.to(self.device)
-            batch_immunogenicity_scores = batch_immunogenicity_scores.to(self.device)
+            batch_codon_adaptation_indices = batch_codon_adaptation_indices.to(self.device)
 
             # Run one step of training
-            outputs = self.model.step(batch_sequences, batch_immunogenicity_scores)
+            outputs = self.model.step(batch_sequences, batch_codon_adaptation_indices)
             if self.model_type == "vae":
                 combined_loss = outputs["combined_loss"]
                 reconstruction_loss = outputs["reconstruction_loss"]
                 kl_divergence = outputs["kl_divergence"]
-            elif self.model_type in ["vaxformer", "lstm"]:
+            elif self.model_type in ["vaxformer", "lstm", 'rnaformer']:
                 combined_loss = outputs["loss"]
                 perplexity = outputs["perplexity"]
 
@@ -206,7 +209,7 @@ class Trainer:
                     reconstruction_loss.item() * num_examples
                 )
                 total_loss["kl_divergence"] += kl_divergence.item() * num_examples
-            elif self.model_type in ["vaxformer", "lstm"]:
+            elif self.model_type in ["vaxformer", "lstm", 'rnaformer']:
                 total_loss["combined_loss"] += combined_loss.item() * num_examples
                 total_loss["perplexity"] += perplexity.item() * num_examples
             total_examples += num_examples

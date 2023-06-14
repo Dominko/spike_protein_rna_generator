@@ -163,4 +163,6 @@ wandb/
 train_outputs/
 sample_outputs/
 
+outputs/
+
 .DS_Store
