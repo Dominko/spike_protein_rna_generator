@@ -14,10 +14,12 @@ from dotenv import load_dotenv
 load_dotenv("env/.env")
 
 from src.configs import TestingConfigs, TrainingConfigs
-from src.constants import START_TOKEN
+from src.constants import CAI_TEMPLATE, START_TOKEN
 from src.dataset.dataset import SequenceDataset
 from src.models.lstm import VaxLSTM
-from src.models.vaxformer import Vaxformer
+from src.models.rnaformer import RNAformer
+
+# from src.models.vaxformer import Vaxformer
 from src.utils import common_utils, model_utils
 
 
@@ -55,12 +57,12 @@ def main():
         prepend_start_token=True,
     )
 
-    if train_configs.model_configs.model_type == "vaxformer":
+    if train_configs.model_configs.model_type == "rnaformer":
         kwargs = {
-            "padding_idx": train_dataset.tokenizer.enc_dict["-"],
+            # "padding_idx": train_dataset.tokenizer.enc_dict["-"],
             "start_idx": train_dataset.tokenizer.enc_dict[START_TOKEN],
         }
-        model = Vaxformer(train_configs.model_configs, device, **kwargs).to(device)
+        model = RNAformer(train_configs.model_configs, device, **kwargs).to(device)
 
         model.load_state_dict(
             torch.load(configs.pretrained_model_state_dict_path, device)[
@@ -71,21 +73,11 @@ def main():
         model.eval()
 
         generated_seqs = {
-            "low": train_dataset.tokenizer.decode(
+            "generated": train_dataset.tokenizer.decode(
                 model.generate_sequences(
-                    args.num_sequences, 0, temperature=0.8, batch_size=20
+                    args.num_sequences, CAI_TEMPLATE, temperature=0.8, batch_size=20
                 )
-            ),
-            "intermediate": train_dataset.tokenizer.decode(
-                model.generate_sequences(
-                    args.num_sequences, 1, temperature=0.8, batch_size=20
-                )
-            ),
-            "high": train_dataset.tokenizer.decode(
-                model.generate_sequences(
-                    args.num_sequences, 2, temperature=0.8, batch_size=20
-                )
-            ),
+            )
         }
 
         immunogenicity_seqs = {}
@@ -94,6 +86,7 @@ def main():
             for sequence in sequences:
                 sequences_count[sequence] += 1
             immunogenicity_seqs[immunogenicity] = sequences_count
+    
     elif train_configs.model_configs.model_type == "lstm":
         kwargs = {
             "padding_idx": train_dataset.tokenizer.enc_dict["-"],

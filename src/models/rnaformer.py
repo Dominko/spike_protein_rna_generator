@@ -78,9 +78,9 @@ class RNAformer(nn.Module):
             (amino_acid_positioned , codon_adaptation_index_nhead ), dim=2
         )
 
-        # print(amino_acid_positioned.shape)
-        # print(codon_adaptation_index_nhead.shape)
-        # print(codon_adaptation_index_memory.shape)
+        # print(amino_acid_positioned.dtype)
+        # print(codon_adaptation_index_nhead.dtype)
+        # print(codon_adaptation_index_memory.dtype)
         # print(mask.shape)
 
         amino_acid_decoded = self.transformer(
@@ -123,7 +123,7 @@ class RNAformer(nn.Module):
 
             codon_adaptation_indices = torch.LongTensor(
                 [codon_adaptation_index] * batch_size
-            ).to(self.device)
+            ).to(self.device).float()
 
             for i in tqdm(range(self.max_seq_len)):
                 out = self.forward(input_sequences, codon_adaptation_indices)
