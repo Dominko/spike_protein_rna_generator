@@ -1,10 +1,10 @@
 dataset_configs:
   train:
-    sequences_path: ./datasets/train
+    sequences_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/train
   val:
-    sequences_path: ./datasets/valid
+    sequences_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/valid
   test:
-    sequences_path: ./datasets/test
+    sequences_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/test
 model_configs:
   model_type: rnaformer
   hyperparameters:

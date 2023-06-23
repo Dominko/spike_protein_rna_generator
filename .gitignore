@@ -166,3 +166,5 @@ sample_outputs/
 outputs/
 
 .DS_Store
+
+slurm-*
