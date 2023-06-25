@@ -61,7 +61,7 @@ def main():
         kwargs = {
             # "padding_idx": train_dataset.tokenizer.enc_dict["-"],
             # "start_idx": train_dataset.tokenizer.enc_dict[START_TOKEN],
-            "start_idx": None,
+            "start_idx": 0,
         }
         model = RNAformer(train_configs.model_configs, device, **kwargs).to(device)
 
