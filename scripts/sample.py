@@ -60,7 +60,8 @@ def main():
     if train_configs.model_configs.model_type == "rnaformer":
         kwargs = {
             # "padding_idx": train_dataset.tokenizer.enc_dict["-"],
-            "start_idx": train_dataset.tokenizer.enc_dict[START_TOKEN],
+            # "start_idx": train_dataset.tokenizer.enc_dict[START_TOKEN],
+            "start_idx": None,
         }
         model = RNAformer(train_configs.model_configs, device, **kwargs).to(device)
 
