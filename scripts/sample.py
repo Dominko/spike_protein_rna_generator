@@ -54,7 +54,7 @@ def main():
         train_configs.model_configs.hyperparameters.max_seq_len,
         sequence_one_hot=False,
         label_one_hot=False,
-        prepend_start_token=True,
+        prepend_start_token=False,
     )
 
     if train_configs.model_configs.model_type == "rnaformer":
