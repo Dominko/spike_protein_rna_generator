@@ -13,6 +13,7 @@ class Tokenizer:
         prepend_start_token=False,
     ):
         self.max_seq_len = max_seq_len
+        self.prepend_start_token = prepend_start_token
 
         if prepend_start_token:
             self.enc_dict = {
@@ -31,6 +32,10 @@ class Tokenizer:
         enc = []
         sequence = sequence.ljust(self.max_seq_len, "-")
         # for aa in sequence[: self.max_seq_len]:
+        if self.prepend_start_token:
+            enc.append(self.enc_dict[sequence[0]])
+            sequence = sequence[1:]
+
         for aa in [sequence[i:i+3] for i in range(0, len(sequence), 3)]:
             enc.append(self.enc_dict[aa])
 

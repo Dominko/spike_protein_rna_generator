@@ -8,7 +8,7 @@ dataset_configs:
 model_configs:
   model_type: rnaformer
   hyperparameters:
-    max_seq_len: 3813
+    max_seq_len: 1271
     hidden_dim: 64
     nhead: 4
     num_layers: 1

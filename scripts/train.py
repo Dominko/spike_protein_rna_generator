@@ -60,7 +60,7 @@ def main():
     ]:
         sequence_one_hot = False
         label_one_hot = False
-        prepend_start_token = False
+        prepend_start_token = True
 
     train_dataset = SequenceDataset(
         configs.dataset_configs,
