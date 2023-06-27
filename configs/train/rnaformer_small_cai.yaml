@@ -8,6 +8,7 @@ dataset_configs:
   test:
     sequences_path: ./datasets/test
     codon_adaptation_indices_path: ./datasets/test_cai
+  load_codon_adaptation_indices: True
 model_configs:
   model_type: rnaformer
   hyperparameters:

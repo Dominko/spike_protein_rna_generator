@@ -15,8 +15,8 @@ def load_sequences_file(filename):
 def load_codon_adaptation_indices(
     codon_adaptation_indices_filepath
 ):
-    if codon_adaptation_indices_filepath:
-        codon_adaptation_indices = np.load(codon_adaptation_indices_filepath)
+    codon_adaptation_indices = np.loadtxt(codon_adaptation_indices_filepath, delimiter=",", dtype=float)
+    # print(codon_adaptation_indices)
     #     if one_hot:
     #         immunogenicity_scores = np.array(
     #             [EXTRA_ATTRIBUTE_ONE_HOT[score] for score in immunogenicity_scores]
@@ -29,7 +29,7 @@ def load_codon_adaptation_indices(
     #     else:
     #         immunogenicity_scores = np.array([1 for _ in range(len(sequences))])
 
-    return torch.tensor(codon_adaptation_indices).double()
+    return torch.tensor(codon_adaptation_indices).float()
 
 
 class SequenceDataset:
@@ -71,7 +71,7 @@ class SequenceDataset:
 
         if self.load_codon_adaptation_indices:
             self.codon_adaptation_indices = load_codon_adaptation_indices(
-                codon_adaptation_indices_filepath, self.sequences, self.label_one_hot
+                codon_adaptation_indices_filepath
             )
         else:
             self.codon_adaptation_indices = torch.tensor(np.vstack([CAI_TEMPLATE]*len(self.sequences))).float()
