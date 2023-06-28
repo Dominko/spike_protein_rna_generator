@@ -28,6 +28,7 @@ echo "Activating conda environment: ${CONDA_ENV_NAME}"
 conda activate ${CONDA_ENV_NAME}
 
 echo "Running experiment"
+echo "Config: $1"
 # limit of 12 GB GPU is hidden 256 and batch size 256
 python scripts/train.py \
 --config_filepath=$1 \
