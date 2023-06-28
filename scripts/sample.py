@@ -73,10 +73,17 @@ def main():
 
         model.eval()
 
+        desired_CAI = None
+        if configs.desired_cai_path:
+            desired_CAI = np.loadtxt(configs.desired_cai_path, delimiter=",", dtype=float)
+        else:
+            desired_CAI = CAI_TEMPLATE
+        print(desired_CAI)
+
         generated_seqs = {
             "generated": train_dataset.tokenizer.decode(
                 model.generate_sequences(
-                    args.num_sequences, CAI_TEMPLATE, temperature=0.8, batch_size=20
+                    args.num_sequences, desired_CAI, temperature=0.8, batch_size=20
                 )
             )
         }

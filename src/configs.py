@@ -62,3 +62,4 @@ class TestingConfigs(BaseModel):
     device: Optional[int] = 0
     pretrained_model_state_dict_path: str
     pretrained_model_configs_path: str
+    desired_cai_path: Optional[str]
