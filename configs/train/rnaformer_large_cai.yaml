@@ -13,9 +13,9 @@ model_configs:
   model_type: rnaformer
   hyperparameters:
     max_seq_len: 1271
-    hidden_dim: 128
+    hidden_dim: 200
     nhead: 4
-    num_layers: 2
+    num_layers: 3
     regularizers: []
     dropout: 0.5
     batch_size: 32
