@@ -72,16 +72,16 @@ class RNAformer(nn.Module):
             1, amino_acid_positioned.size(1), self.nhead
         ) 
         codon_adaptation_index_memory = codon_adaptation_index.repeat(
-            1, amino_acid_positioned.size(1), int((self.hidden_dim + self.CAI_size * self.nhead) / codon_adaptation_index.size(2))
+            1, amino_acid_positioned.size(1), amino_acid_positioned.shape[2]
         ) 
         amino_acid_positioned = torch.cat(
             (amino_acid_positioned , codon_adaptation_index_nhead ), dim=2
         )
 
-        # print(amino_acid_positioned.dtype)
+        print(amino_acid_positioned.shape)
         # print(codon_adaptation_index_nhead.dtype)
-        # print(codon_adaptation_index_memory.dtype)
-        # print(mask.shape)
+        print(codon_adaptation_index_memory.shape)
+        print(mask.shape)
 
         amino_acid_decoded = self.transformer(
             amino_acid_positioned, memory=codon_adaptation_index_memory, tgt_mask=mask
