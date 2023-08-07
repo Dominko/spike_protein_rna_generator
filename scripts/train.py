@@ -56,6 +56,7 @@ def main():
     if configs.model_configs.model_type in [
         "vaxformer",
         "rnaformer",
+        "rnaformer_single",
         "lstm",
     ]:
         sequence_one_hot = False

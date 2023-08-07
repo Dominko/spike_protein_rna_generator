@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 paths = []
 
-base_path = "datasets/raw/spikenuc0415_clean_n_X.fasta"
+base_path = "datasets/raw/spikenuc0415_clean_n_X.fasta.gz"
 
 output_data_path = "datasets/raw/spike_nuc_clean_3813.fasta"
 

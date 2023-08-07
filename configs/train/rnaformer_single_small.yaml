@@ -1,0 +1,31 @@
+dataset_configs:
+  train:
+    sequences_path: ./datasets/train
+    codon_adaptation_indices_path: ./datasets/train_cai
+  val:
+    sequences_path: ./datasets/valid
+    codon_adaptation_indices_path: ./datasets/valid_cai
+  test:
+    sequences_path: ./datasets/test
+    codon_adaptation_indices_path: ./datasets/test_cai
+model_configs:
+  model_type: rnaformer_single
+  hyperparameters:
+    max_seq_len: 1271
+    hidden_dim: 64
+    nhead: 4
+    num_layers: 1
+    regularizers: []
+    dropout: 0.5
+    batch_size: 32
+    optimizer: "adam"
+    learning_rate: 1e-4
+    grad_accumulation_step: 1
+    immunogenicity_as_value: False
+training_configs:
+  epochs: 100
+  eval_steps: 1
+  checkpoint_steps: 10
+  device: 0
+  random_seed: 1234
+  outputs_dir: "train_outputs"

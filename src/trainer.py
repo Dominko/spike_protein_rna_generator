@@ -12,12 +12,13 @@ from .constants import START_TOKEN
 from .dataset.dataset import SequenceDataset
 from .models.lstm import VaxLSTM
 from .models.rnaformer import RNAformer
+from .models.rnaformer_single import RNAformerS
 
 # from .models.vae import SpikeFCVAE
 # from .models.vaxformer import Vaxformer
 
 # MODELS_MAP = {"spike_vae": SpikeFCVAE, "vaxformer": Vaxformer, "rnaformer": RNAformer, "lstm": VaxLSTM}
-MODELS_MAP = {"rnaformer": RNAformer, "lstm": VaxLSTM}
+MODELS_MAP = {"rnaformer": RNAformer, "rnaformer_single": RNAformerS, "lstm": VaxLSTM}
 
 class Trainer:
     def __init__(
@@ -91,7 +92,7 @@ class Trainer:
         """
 
         kwargs = {}
-        if self.model_type in ["vaxformer", "rnaformer", "lstm"]:
+        if self.model_type in ["vaxformer", "rnaformer", "rnaformer_single", "lstm"]:
             kwargs.update(
                 {"start_idx": self.start_idx}
             )
@@ -155,7 +156,7 @@ class Trainer:
                 "reconstruction_loss": 0,
                 "kl_divergence": 0,
             }
-        elif self.model_type in ["vaxformer", "lstm", 'rnaformer']:
+        elif self.model_type in ["vaxformer", "lstm", 'rnaformer', "rnaformer_single"]:
             total_loss = {"combined_loss": 0, "perplexity": 0}
 
         total_examples = 0
@@ -177,7 +178,7 @@ class Trainer:
                 combined_loss = outputs["combined_loss"]
                 reconstruction_loss = outputs["reconstruction_loss"]
                 kl_divergence = outputs["kl_divergence"]
-            elif self.model_type in ["vaxformer", "lstm", 'rnaformer']:
+            elif self.model_type in ["vaxformer", "lstm", 'rnaformer', 'rnaformer_single']:
                 combined_loss = outputs["loss"]
                 perplexity = outputs["perplexity"]
 
@@ -209,7 +210,7 @@ class Trainer:
                     reconstruction_loss.item() * num_examples
                 )
                 total_loss["kl_divergence"] += kl_divergence.item() * num_examples
-            elif self.model_type in ["vaxformer", "lstm", 'rnaformer']:
+            elif self.model_type in ["vaxformer", "lstm", 'rnaformer', 'rnaformer_embedded']:
                 total_loss["combined_loss"] += combined_loss.item() * num_examples
                 total_loss["perplexity"] += perplexity.item() * num_examples
             total_examples += num_examples
