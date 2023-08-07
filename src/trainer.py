@@ -210,7 +210,7 @@ class Trainer:
                     reconstruction_loss.item() * num_examples
                 )
                 total_loss["kl_divergence"] += kl_divergence.item() * num_examples
-            elif self.model_type in ["vaxformer", "lstm", 'rnaformer', 'rnaformer_embedded']:
+            elif self.model_type in ["vaxformer", "lstm", 'rnaformer', 'rnaformer_single']:
                 total_loss["combined_loss"] += combined_loss.item() * num_examples
                 total_loss["perplexity"] += perplexity.item() * num_examples
             total_examples += num_examples
