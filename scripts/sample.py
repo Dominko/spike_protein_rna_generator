@@ -18,6 +18,7 @@ from src.constants import CAI_TEMPLATE, START_TOKEN
 from src.dataset.dataset import SequenceDataset
 from src.models.lstm import VaxLSTM
 from src.models.rnaformer import RNAformer
+from src.models.rnaformer_single import RNAformerS
 
 # from src.models.vaxformer import Vaxformer
 from src.utils import common_utils, model_utils
@@ -94,7 +95,45 @@ def main():
             for sequence in sequences:
                 sequences_count[sequence] += 1
             immunogenicity_seqs[immunogenicity] = sequences_count
-    
+
+    elif train_configs.model_configs.model_type == "rnaformer_single":
+        kwargs = {
+            # "padding_idx": train_dataset.tokenizer.enc_dict["-"],
+            # "start_idx": train_dataset.tokenizer.enc_dict[START_TOKEN],
+            "start_idx": 0,
+        }
+        model = RNAformerS(train_configs.model_configs, device, **kwargs).to(device)
+
+        model.load_state_dict(
+            torch.load(configs.pretrained_model_state_dict_path, device)[
+                "model_state_dict"
+            ]
+        )
+
+        model.eval()
+
+        desired_CAI = None
+        if configs.desired_cai_path:
+            desired_CAI = np.loadtxt(configs.desired_cai_path, delimiter=",", dtype=float)
+        else:
+            desired_CAI = CAI_TEMPLATE
+        print(desired_CAI)
+
+        generated_seqs = {
+            "generated": train_dataset.tokenizer.decode(
+                model.generate_sequences(
+                    args.num_sequences, desired_CAI, temperature=0.8, batch_size=20
+                )
+            )
+        }
+
+        immunogenicity_seqs = {}
+        for immunogenicity, sequences in generated_seqs.items():
+            sequences_count = defaultdict(lambda: 0)
+            for sequence in sequences:
+                sequences_count[sequence] += 1
+            immunogenicity_seqs[immunogenicity] = sequences_count
+
     elif train_configs.model_configs.model_type == "lstm":
         kwargs = {
             "padding_idx": train_dataset.tokenizer.enc_dict["-"],
