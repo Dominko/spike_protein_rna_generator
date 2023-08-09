@@ -10,7 +10,7 @@ dataset_configs:
     codon_adaptation_indices_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/test_cai
   load_codon_adaptation_indices: True
 model_configs:
-  model_type: rnaformer
+  model_type: rnaformer_single
   hyperparameters:
     max_seq_len: 1271
     hidden_dim: 128
