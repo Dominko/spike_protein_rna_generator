@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 paths = []
 
-base_path = "datasets/raw/spikenuc0415_clean_n_X.fasta.gz"
+base_path = "datasets/raw/spike_nuc_X.fasta.gz"
 
 output_data_path = "datasets/raw/spike_nuc_clean_3813.fasta"
 
@@ -35,14 +35,19 @@ def is_gene_valid(seq):
 
 valid = []
 outliers = 0
+wrong_start = 0
 for path in paths:
-    with open(path, "r") as handle:
+    with gzip.open(path, "rt") as handle:
         for seq_record in tqdm(SeqIO.parse(handle, "fasta")):
             if len(seq_record.seq) == 3813 and is_gene_valid(seq_record.seq):
-                # print(len(seq_record.seq))
-                valid.append(seq_record)
 
-print(outliers)
+                triplets = [seq_record.seq[i:i+3] for i in range(0, len(seq_record.seq), 3)]
+                if not 'TAG' in triplets[0 : len(triplets)-1] and not 'TAA' in triplets[0 : len(triplets)-1] and not 'TGA' in triplets[0 : len(triplets)-1]:
+                    # print(len(seq_record.seq))
+                    valid.append(seq_record)
+                else:
+                    wrong_start += 1
+print(wrong_start)
 print(len(valid))
 
 # valid = set(valid)

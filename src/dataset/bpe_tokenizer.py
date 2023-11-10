@@ -1,48 +1,45 @@
 import numpy as np
 import torch
+from tokenizers import Tokenizer
 from torch.nn import functional as F
 
 from ..constants import CODON_INDICES, CODONS, START_TOKEN
+from ..dataset.bpe_trainer import BPE_Trainer
 
 
-class Tokenizer:
+class BPE_Tokenizer:
     def __init__(
         self,
+        tokenizer_path,
         max_seq_len: int,
         one_hot=True,
         prepend_start_token=False
     ):
-        self.max_seq_len = max_seq_len
+        self.tokenizer = Tokenizer.from_file(tokenizer_path)
         self.prepend_start_token = prepend_start_token
-
-        if prepend_start_token:
-            self.enc_dict = {
-                letter: idx for idx, letter in enumerate([START_TOKEN] + CODONS)
-            }
-            self.max_seq_len += 1
-            self.dec_dict = {
-                idx: amino_acid for amino_acid, idx in CODON_INDICES.items()
-            }
-        else:
-            self.enc_dict = CODON_INDICES
-        self.dec_dict = {idx: amino_acid for amino_acid, idx in self.enc_dict.items()}
         self.one_hot = one_hot
+        self.max_seq_len = max_seq_len
+        # if prepend_start_token:
+        #     self.max_seq_len += 1
+        self.tokenizer.enable_padding(direction="right", pad_id=1, length=self.max_seq_len)
+        
+
+        
 
     def encode(self, sequence):
         enc = []
-        sequence = sequence.ljust(self.max_seq_len, "-")
         # for aa in sequence[: self.max_seq_len]:
         if self.prepend_start_token:
-            enc.append(self.enc_dict[sequence[0]])
-            sequence = sequence[1:]
+            enc.append(self.tokenizer.get_vocab()["<BOS>"])
 
-        for aa in [sequence[i:i+3] for i in range(0, len(sequence), 3)]:
-            enc.append(self.enc_dict[aa])
+        sequence = BPE_Trainer.preencode_nuc(sequence.strip(">"))
+
+        enc = enc + self.tokenizer.encode(sequence).ids
 
         # print(len(enc))
 
         if self.one_hot:
-            return F.one_hot(torch.tensor(enc), len(CODON_INDICES)).float()
+            return F.one_hot(torch.tensor(enc), len(self.tokenizer.get_vocab())).float()
         else:
             return torch.tensor(enc)
 
@@ -60,8 +57,10 @@ class Tokenizer:
 
         for batch_idx in range(batch_size):
             seq = ""
-            for seq_idx in range(seq_len):
-                seq += self.dec_dict[int(h[batch_idx][seq_idx])]
+            # for seq_idx in range(seq_len):
+            #     seq += self.dec_dict[int(h[batch_idx][seq_idx])]
+            seq = self.tokenizer.decode_batch(h[batch_idx])
             batch_seq.append(seq)
 
         return batch_seq
+

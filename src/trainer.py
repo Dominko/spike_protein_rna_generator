@@ -28,6 +28,7 @@ class Trainer:
         val_dataset: SequenceDataset,
         test_dataset: SequenceDataset,
         outputs_dir: str,
+        prepend_start_token: bool,
         device: torch.device = None,
         verbose: bool = False,
     ):
@@ -48,8 +49,10 @@ class Trainer:
 
         # Dataset setup
         # self.padding_idx = train_dataset.tokenizer.enc_dict["-"]
-        if START_TOKEN in train_dataset.tokenizer.enc_dict:
-            self.start_idx = train_dataset.tokenizer.enc_dict[START_TOKEN]
+        # if START_TOKEN in train_dataset.tokenizer.enc_dict:
+        if prepend_start_token:
+            # self.start_idx = train_dataset.tokenizer.enc_dict[START_TOKEN]
+            self.start_idx = 0
         else:
             self.start_idx = None
 

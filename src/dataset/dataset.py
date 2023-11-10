@@ -3,6 +3,7 @@ import torch
 
 from ..configs import DatasetConfigs
 from ..constants import CAI_TEMPLATE, START_TOKEN
+from .bpe_tokenizer import BPE_Tokenizer
 from .tokenizer import Tokenizer
 
 
@@ -36,20 +37,28 @@ class SequenceDataset:
     def __init__(
         self,
         dataset_configs: DatasetConfigs,
+        tokenizer: str,
         split: str,
         max_seq_len: int,
         sequence_one_hot: bool = True,
         label_one_hot: bool = True,
         prepend_start_token: bool = False,
+        tokenizer_path: str = "",
     ):
         self.max_seq_len = max_seq_len
         self.sequence_one_hot = sequence_one_hot
         self.label_one_hot = label_one_hot
         self.prepend_start_token = prepend_start_token
         self.load_codon_adaptation_indices = dataset_configs.load_codon_adaptation_indices
-        self.tokenizer = Tokenizer(
-            self.max_seq_len, self.sequence_one_hot, prepend_start_token
-        )
+
+        if tokenizer == "Base":
+            self.tokenizer = Tokenizer(
+                self.max_seq_len, self.sequence_one_hot, prepend_start_token
+            )
+        if tokenizer == "BPE":
+            self.tokenizer = BPE_Tokenizer(
+               tokenizer_path, self.max_seq_len, self.sequence_one_hot, prepend_start_token
+            )
 
         if split == "train":
             sequences_filepath = dataset_configs.train.sequences_path

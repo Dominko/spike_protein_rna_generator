@@ -31,7 +31,7 @@ echo "Running experiment"
 # limit of 12 GB GPU is hidden 256 and batch size 256
 python scripts/sample.py \
 --config_filepath $1 \
---num_sequences=2000
+--num_sequences=33000
 
 echo ""
 echo "============"
