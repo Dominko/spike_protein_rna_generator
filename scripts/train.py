@@ -65,27 +65,33 @@ def main():
 
     train_dataset = SequenceDataset(
         configs.dataset_configs,
+        configs.model_configs.tokenizer,
         "train",
         configs.model_configs.hyperparameters.max_seq_len,
         sequence_one_hot,
         label_one_hot,
         prepend_start_token=prepend_start_token,
+        tokenizer_path=configs.model_configs.tokenizer_path
     )
     val_dataset = SequenceDataset(
         configs.dataset_configs,
+        configs.model_configs.tokenizer,
         "val",
         configs.model_configs.hyperparameters.max_seq_len,
         sequence_one_hot,
         label_one_hot,
         prepend_start_token=prepend_start_token,
+        tokenizer_path=configs.model_configs.tokenizer_path
     )
     test_dataset = SequenceDataset(
         configs.dataset_configs,
+        configs.model_configs.tokenizer,
         "test",
         configs.model_configs.hyperparameters.max_seq_len,
         sequence_one_hot,
         label_one_hot,
         prepend_start_token=prepend_start_token,
+        tokenizer_path=configs.model_configs.tokenizer_path
     )
 
     data_stats = {
@@ -101,6 +107,7 @@ def main():
         val_dataset,
         test_dataset,
         outputs_dir,
+        prepend_start_token,
         device=device,
     )
 

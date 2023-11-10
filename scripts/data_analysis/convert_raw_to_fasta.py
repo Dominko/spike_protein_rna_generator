@@ -15,9 +15,9 @@ from Bio.SeqUtils import CodonAdaptationIndex
 from sklearn.decomposition import PCA
 from tqdm import tqdm
 
-base_path = "datasets/spike_nuc_clean_3813"
+base_path = "datasets/test"
 
-output_data_path = "datasets/spike_nuc_clean_3813.fasta"
+output_data_path = "datasets/test.fasta"
 
 out = []
 with open(base_path, "r") as handle:

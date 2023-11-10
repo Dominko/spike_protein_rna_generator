@@ -10,6 +10,8 @@ dataset_configs:
     codon_adaptation_indices_path: ./datasets/test_cai
 model_configs:
   model_type: rnaformer
+  tokenizer: BPE
+  tokenizer_path: ./datasets/tokenizer-trained.json
   hyperparameters:
     max_seq_len: 1271
     hidden_dim: 64

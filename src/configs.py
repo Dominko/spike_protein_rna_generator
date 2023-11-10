@@ -39,7 +39,8 @@ class ModelConfigs(BaseModel):
     model_state_dict_path: Optional[str]
     hyperparameters: Optional[HyperparametersConfigs]
     extra_attribute: bool = False
-
+    tokenizer:str = "Base"
+    tokenizer_path:Optional[str]
 
 class SetupConfigs(BaseModel):
     epochs: int = 20
@@ -63,3 +64,4 @@ class TestingConfigs(BaseModel):
     pretrained_model_state_dict_path: str
     pretrained_model_configs_path: str
     desired_cai_path: Optional[str]
+    topk=64

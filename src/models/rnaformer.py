@@ -1,4 +1,5 @@
 import torch
+from tokenizers import Tokenizer
 from torch import nn
 from torch.nn import TransformerDecoder
 from torch.nn import functional as F
@@ -19,8 +20,15 @@ class RNAformer(nn.Module):
         self.num_layers = model_configs.hyperparameters.num_layers
         self.dropout = model_configs.hyperparameters.dropout
 
+        tokenizer = model_configs.tokenizer
+
         # include start token in the vocab size
-        self.vocab_size = len(CODON_INDICES) + 1
+        if tokenizer == "Base":
+            self.vocab_size = len(CODON_INDICES) + 1
+        if tokenizer == "BPE":
+            tokenizer = Tokenizer.from_file(model_configs.tokenizer_path)
+            self.vocab_size = len(tokenizer.get_vocab())
+            # print(self.vocab_size)
         self.CAI_size = len(CAI_TEMPLATE)
 
         # self.padding_idx = kwargs["padding_idx"]
@@ -57,6 +65,8 @@ class RNAformer(nn.Module):
         self.projection = nn.Linear(transformer_input_dim, self.hidden_dim)
 
     def forward(self, input_sequence, codon_adaptation_index=CAI_TEMPLATE, mask=None):
+        print(input_sequence)
+
         amino_acid_embedded = self.amino_acid_embedding(input_sequence)
         amino_acid_positioned = self.positional_embedding(amino_acid_embedded)
 
@@ -99,11 +109,14 @@ class RNAformer(nn.Module):
         generated_sequences = self.forward(input, input_codon_adaptation_index, mask)
         generated_sequences = generated_sequences.view(-1, self.vocab_size)
 
+        # print(generated_sequences.shape)
+        # print(target.shape)
+
         loss = F.cross_entropy(generated_sequences, target)
         return {"loss": loss, "perplexity": torch.exp(loss)}
 
     def generate_sequences(
-        self, num_sequences, codon_adaptation_index, temperature=1.0, batch_size=None
+        self, num_sequences, codon_adaptation_index, temperature=1.0, batch_size=None, topk=64
     ):
         self.eval()
         # padding is all ones
@@ -130,7 +143,14 @@ class RNAformer(nn.Module):
                 out = out[:, -1, :] / temperature
                 out = F.softmax(out, dim=-1)
 
-                new_input_sequences = torch.multinomial(out, num_samples=1)
+                # Top K sampling
+                out = torch.topk(out, topk)
+
+                # print(out)
+
+                new_input_sequences_i = torch.multinomial(out.values, num_samples=1)
+                new_input_sequences = out.indices[0, new_input_sequences_i]
+                
                 samples[idx : idx + batch_size, i] = new_input_sequences.squeeze()
                 input_sequences = torch.cat(
                     (input_sequences, new_input_sequences), dim=1
