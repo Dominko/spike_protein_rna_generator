@@ -122,7 +122,7 @@ def main():
         generated_seqs = {
             "generated": train_dataset.tokenizer.decode(
                 model.generate_sequences(
-                    args.num_sequences, desired_CAI, temperature=0.8, batch_size=20
+                    args.num_sequences, desired_CAI, temperature=0.8, batch_size=20, topk=configs.topk
                 )
             )
         }

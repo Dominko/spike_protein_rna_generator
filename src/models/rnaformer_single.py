@@ -1,4 +1,5 @@
 import torch
+from tokenizers import Tokenizer
 from torch import nn
 from torch.nn import TransformerDecoder
 from torch.nn import functional as F
@@ -18,9 +19,16 @@ class RNAformerS(nn.Module):
         self.nhead = model_configs.hyperparameters.nhead
         self.num_layers = model_configs.hyperparameters.num_layers
         self.dropout = model_configs.hyperparameters.dropout
+        
+        tokenizer = model_configs.tokenizer
 
         # include start token in the vocab size
-        self.vocab_size = len(CODON_INDICES) + 1
+        if tokenizer == "Base":
+            self.vocab_size = len(CODON_INDICES) + 1
+        if tokenizer == "BPE":
+            tokenizer = Tokenizer.from_file(model_configs.tokenizer_path)
+            self.vocab_size = len(tokenizer.get_vocab())
+            # print(self.vocab_size)
         self.CAI_size = len(CAI_TEMPLATE)
 
         # self.padding_idx = kwargs["padding_idx"]
@@ -90,7 +98,7 @@ class RNAformerS(nn.Module):
         return {"loss": loss, "perplexity": torch.exp(loss)}
 
     def generate_sequences(
-        self, num_sequences, codon_adaptation_index, temperature=1.0, batch_size=None
+        self, num_sequences, codon_adaptation_index, temperature=1.0, batch_size=None, topk=64
     ):
         self.eval()
         # padding is all ones
@@ -117,7 +125,11 @@ class RNAformerS(nn.Module):
                 out = out[:, -1, :] / temperature
                 out = F.softmax(out, dim=-1)
 
-                new_input_sequences = torch.multinomial(out, num_samples=1)
+                out = torch.topk(out, topk)
+
+                new_input_sequences_i = torch.multinomial(out.values, num_samples=1)
+                new_input_sequences = out.indices[0, new_input_sequences_i]
+
                 samples[idx : idx + batch_size, i] = new_input_sequences.squeeze()
                 input_sequences = torch.cat(
                     (input_sequences, new_input_sequences), dim=1

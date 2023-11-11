@@ -15,7 +15,7 @@ from tokenizers.trainers import (
 )
 
 sys.path.append(os.getcwd())
-from ..constants import CODON_INDICES, CODONS, START_TOKEN
+from constants import CODON_INDICES, CODONS, START_TOKEN
 
 unk_token = "<UNK>"  # token for unknown words
 spl_tokens = ["<BOS>", "<PAD>", "<UNK>", "<SEP>", "<MASK>", "<CLS>"]  # special tokens
@@ -48,7 +48,7 @@ class BPE_Trainer():
         Prepares the tokenizer and trainer with unknown & special tokens.
         """
         tokenizer = Tokenizer(BPE(unk_token = unk_token))
-        trainer = BpeTrainer(initial_alphabet=CODONS, special_tokens = spl_tokens, vocab_size=500)
+        trainer = BpeTrainer(initial_alphabet=CODONS, special_tokens = spl_tokens)
 
         # print(tokenizer.get_vocab())
         # tokenizer.add_tokens(CODONS)
@@ -77,5 +77,5 @@ class BPE_Trainer():
         output =trained_tokenizer.encode(input_string)
         print(output.tokens)
 
-# trainer = BPE_Trainer.preprocess_training_file("../datasets/train", "../datasets/train_bpe_prerocess")
-# trainer = BPE_Trainer("../datasets/train_bpe_prerocess")
+trainer = BPE_Trainer.preprocess_training_file("../datasets/train", "../datasets/train_bpe_prerocess")
+trainer = BPE_Trainer("../datasets/train_bpe_prerocess")
