@@ -10,6 +10,8 @@ dataset_configs:
     codon_adaptation_indices_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/test_cai
 model_configs:
   model_type: rnaformer_single
+  tokenizer: BPE
+  tokenizer_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/tokenizer-trained.json
   hyperparameters:
     max_seq_len: 1271
     hidden_dim: 256
