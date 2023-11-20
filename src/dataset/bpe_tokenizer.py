@@ -55,11 +55,18 @@ class BPE_Tokenizer:
         else:
             h = batch
 
+        # fs = [int(x) for x in fs]
+
         for batch_idx in range(batch_size):
             seq = ""
+
+            to_translate = [int(x) for x in h[batch_idx].tolist()]
             # for seq_idx in range(seq_len):
             #     seq += self.dec_dict[int(h[batch_idx][seq_idx])]
-            seq = self.tokenizer.decode_batch(h[batch_idx])
+            seq = self.tokenizer.decode(to_translate)
+
+            seq = BPE_Trainer.predecode_nuc(seq)
+
             batch_seq.append(seq)
 
         return batch_seq

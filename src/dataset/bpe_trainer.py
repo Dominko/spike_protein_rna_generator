@@ -32,6 +32,19 @@ class BPE_Trainer():
         for aa in [seq[i:i+3] for i in range(0, len(seq), 3)]:
             out += chr(CODON_INDICES[aa] + 48) # 48 = 0, good start character
         return out
+    
+    def predecode_nuc(seq):
+        out = ""
+        seq = seq.replace(" ", "")
+
+        for enc in seq:
+            enc = ord(enc)
+            # print(enc)
+            enc = int(enc) - 48  # 48 = 0, good start character
+            # print(enc)
+            out += CODONS[enc]
+
+        return out
 
     def preprocess_training_file(train_path, output_path):
         out = ""
@@ -75,7 +88,7 @@ class BPE_Trainer():
         trained_tokenizer = self.train_BPE()
         input_string = ""
         output =trained_tokenizer.encode(input_string)
-        print(output.tokens)
+        # print(output.tokens)
 
-#trainer = BPE_Trainer.preprocess_training_file("../datasets/train", "../datasets/train_bpe_prerocess")
-#trainer = BPE_Trainer("../datasets/train_bpe_prerocess")
+# trainer = BPE_Trainer.preprocess_training_file("../datasets/train", "../datasets/train_bpe_prerocess")
+# trainer = BPE_Trainer("../datasets/train_bpe_prerocess")
