@@ -51,11 +51,13 @@ def main():
 
     train_dataset = SequenceDataset(
         train_configs.dataset_configs,
+        train_configs.model_configs.tokenizer,
         "train",
         train_configs.model_configs.hyperparameters.max_seq_len,
         sequence_one_hot=False,
         label_one_hot=False,
         prepend_start_token=True,
+        tokenizer_path=train_configs.model_configs.tokenizer_path
     )
 
     if train_configs.model_configs.model_type == "rnaformer":
