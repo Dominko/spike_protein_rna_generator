@@ -39,6 +39,8 @@ class Tokenizer:
         for aa in [sequence[i:i+3] for i in range(0, len(sequence), 3)]:
             enc.append(self.enc_dict[aa])
 
+        enc += [self.enc_dict[""]] * (self.max_seq_len - len(enc)) # Add padding
+
         # print(len(enc))
 
         if self.one_hot:

@@ -21,6 +21,8 @@ output_data_path = "datasets/raw/spike_nuc_clean_3813.fasta"
 
 pattern = re.compile("[^AatTgGcC*?]")
 
+lens = [3813, 3816, 3807, 3822, 3804]
+
 for i in range(0, 15):
     path = base_path.replace("X", str(i+1))
     paths.append(path)
@@ -39,7 +41,7 @@ wrong_start = 0
 for path in paths:
     with gzip.open(path, "rt") as handle:
         for seq_record in tqdm(SeqIO.parse(handle, "fasta")):
-            if len(seq_record.seq) == 3813 and is_gene_valid(seq_record.seq):
+            if len(seq_record.seq) in lens and is_gene_valid(seq_record.seq):
 
                 triplets = [seq_record.seq[i:i+3] for i in range(0, len(seq_record.seq), 3)]
                 if not 'TAG' in triplets[0 : len(triplets)-1] and not 'TAA' in triplets[0 : len(triplets)-1] and not 'TGA' in triplets[0 : len(triplets)-1]:

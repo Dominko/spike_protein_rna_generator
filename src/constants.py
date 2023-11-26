@@ -80,6 +80,8 @@ CODON_INDICES = {
     "TTC": 61,
     "TTG": 62,
     "TTT": 63,
+
+    "": 64
 }
 
 CODONS = list(CODON_INDICES.keys())
