@@ -1,0 +1,6 @@
+device: 0
+random_seed: 1234
+outputs_dir: "sample_outputs"
+pretrained_model_state_dict_path: train_outputs/2023_12_01__18_30_22/checkpoint_10.pt
+pretrained_model_configs_path: train_outputs/2023_12_01__18_30_22/configs.yaml
+desired_cai_path: datasets/human_cai
