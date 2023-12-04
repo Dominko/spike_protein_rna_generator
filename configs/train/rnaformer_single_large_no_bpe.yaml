@@ -8,13 +8,12 @@ dataset_configs:
   test:
     sequences_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/test
     codon_adaptation_indices_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/test_cai
-  load_codon_adaptation_indices: True
 model_configs:
   model_type: rnaformer_single
-  tokenizer: BPE
-  tokenizer_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/tokenizer-trained.json
+  tokenizer: Base
+#  tokenizer_path: /rds/user/co-grab1/hpc-work/rnaformer/datasets/tokenizer-trained.json
   hyperparameters:
-    max_seq_len: 1271
+    max_seq_len: 1300
     hidden_dim: 256
     nhead: 4
     num_layers: 3
