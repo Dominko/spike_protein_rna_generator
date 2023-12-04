@@ -197,6 +197,16 @@ def main():
             outputs_dir, f"{run_name}__{immunogenicity}__de_novo.fasta"
         )
 
+        train_config_filepath = os.path.join(
+            outputs_dir, "train_config.yaml"
+        )
+        test_config_filepath = os.path.join(
+            outputs_dir, "test_config.yaml"
+        )
+
+        common_utils.save_training_configs(train_configs, outputs_dir)
+        common_utils.save_test_configs(configs, outputs_dir)
+
         model_utils.write_sequences_to_fasta(sequences_dict, full_filename)
         model_utils.write_sequences_to_fasta(
             de_novo_sequences[immunogenicity], de_novo_filename
