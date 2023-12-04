@@ -8,7 +8,7 @@ import torch
 import yaml
 from torch import nn
 
-from ..configs import TrainingConfigs
+from ..configs import TestingConfigs, TrainingConfigs
 
 
 def setup_experiment_folder(outputs_dir: str) -> Tuple[str, str]:
@@ -120,5 +120,17 @@ def save_training_configs(configs: TrainingConfigs, output_dir: str):
         output_dir (str): Path to the output directory
     """
     filepath = os.path.join(output_dir, "configs.yaml")
+    with open(filepath, "w") as file:
+        _ = yaml.dump(configs.dict(), file)
+
+def save_test_configs(configs: TestingConfigs, output_dir: str):
+    """
+    Save training config
+
+    Args:
+        configs (TrainingConfigs): Configs used during training for reproducibility
+        output_dir (str): Path to the output directory
+    """
+    filepath = os.path.join(output_dir, "test_configs.yaml")
     with open(filepath, "w") as file:
         _ = yaml.dump(configs.dict(), file)
